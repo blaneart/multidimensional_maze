@@ -17,7 +17,6 @@ with cProfile.Profile() as pr:
     print(maze_3d[stop[0], stop[1], stop[2]], maze_3d[start[0], start[1], start[2]])
     path = my_path_finder.find_path(maze_3d, start=start, stop=stop, verbose=False)
     print(path)
-    plt.show()
 
     pr.disable()
     s = io.StringIO()

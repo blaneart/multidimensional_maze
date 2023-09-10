@@ -14,7 +14,7 @@ class PathFinder3D:
         else:
             self.steps = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]
         self.cax = None
-
+        self.colors = None
     class Node:
         def __init__(self, parent=None, position=None):
             self.parent = parent
@@ -53,7 +53,8 @@ class PathFinder3D:
         shape = np.array(matrix.shape)
         while open_list:
             current_node = min(open_list, key=lambda node: node.f)
-            matrix[current_node.position] = 2  # Mark current node as explored (2 represents explored)
+            matrix[current_node.position[0], current_node.position[1], current_node.position[2]] = 2  # Mark current node as explored (2 represents explored)
+            self.colors[current_node.position[0], current_node.position[1], current_node.position[2]] = [0,1,1, 0.5]  # Mark current node as explored (2 represents explored)
 
             open_list.remove(current_node)
             closed_set[tuple(current_node.position)] = True
@@ -65,7 +66,9 @@ class PathFinder3D:
                     path.appendleft(current.position)
                     current = current.parent
                 for node in path:
-                    matrix[node] = 3  # Mark path nodes as 3
+                    matrix[node[0],node[1],node[2]] = 3  # Mark path nodes as 3
+                    self.colors[node[0],node[1],node[2]] = [1,1,1, 0.9]  # Mark path nodes as 3
+
                 self.update_visualization(matrix)
                 return list(path)
             children = self.add_children(matrix, current_node, shape, closed_set)
@@ -76,36 +79,38 @@ class PathFinder3D:
                 if child in open_list and child.g > open_list[open_list.index(child)].g:
                     continue
                 open_list.append(child) 
-                matrix[child.position] = 5  # Mark neighbor as in open list (1 represents open list)
+                matrix[child.position[0],child.position[1],child.position[2]] = 5  # Mark neighbor as in open list (1 represents open list)
+                self.colors[child.position[0],child.position[1],child.position[2]] = [1,1,0,0.1]  # Mark neighbor as in open list (1 represents open list)
+                
                 self.update_visualization(matrix)
 
         return None
 
     def update_visualization(self, grid):
         self.cax.clear()  # Clear the previous plot
-        self.cax.voxels(grid, facecolors='b', edgecolors='k')  # Display the 3D grid
+        self.cax.voxels(grid, facecolors=self.colors, edgecolors='k')  # Display the 3D grid
         plt.pause(0.1)  # Introduce a delay to slow down the visualization
             
     def plot_matrix(self, matrix, start, end):
-        fig = plt.figure()
-        self.cax = fig.add_subplot(111, projection='3d')
         # fig = plt.figure()
-        # axes = list(matrix.shape)
-        # colors = np.empty(axes + [4], dtype=np.float32)
-        # alpha = 0.1
-        # colors[:] = [1, 0, 0, alpha + 0.5]  # red
-        # colors[start[0],start[1],start[2]] = [0,0,1,alpha + 0.5]
-        # matrix[start[0],start[1],start[2]] = 3
-        # matrix[end[0],end[1],end[2]] = 3
-        # colors[end[0],end[1],end[2]] = [0,1,0, alpha +0.5]
-        # ax = fig.add_subplot(111, projection='3d')
+        # self.cax = fig.add_subplot(111, projection='3d')
+        fig = plt.figure()
+        axes = list(matrix.shape)
+        self.colors = np.empty(axes + [4], dtype=np.float32)
+        alpha = 0.1
+        self.colors[:] = [1, 0, 0, alpha + 0.5]  # red
+        self.colors[start[0],start[1],start[2]] = [0,0,1,alpha + 0.5]
+        matrix[start[0],start[1],start[2]] = 3
+        matrix[end[0],end[1],end[2]] = 3
+        self.colors[end[0],end[1],end[2]] = [0,1,0, alpha +0.5]
+        self.cax = fig.add_subplot(111, projection='3d')
         # if path is not None:
         #     for step in path[1:-1]:
         #         matrix[step[0], step[1], step[2]] = 2
         #         colors[step[0], step[1], step[2]] = [1,0,1, alpha + 0.5]
-        # ax.voxels(matrix, facecolors=colors, edgecolors=None)
+        self.cax.voxels(matrix, facecolors=self.colors, edgecolors=None)
         # plt.show()
-
+        
     def find_path(
             self,
             matrix: Any,
@@ -137,4 +142,5 @@ class PathFinder3D:
         path = self.astar(matrix, np.array(start), np.array(stop))
         if verbose:
             self.plot_matrix(matrix, start, stop, path)
+        plt.show()
         return path
