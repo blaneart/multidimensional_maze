@@ -32,9 +32,8 @@ class TestPathFinder3D(unittest.TestCase):
         start = [0, 0, 0]
         end = [2, 2, 2]
         path = pf.find_path(matrix, start, end)
-        # Ensure that a valid path is found from start to end
         self.assertIsNotNone(path)
-        self.assertEqual(len(path), 7)  # Assuming a known path length
+        self.assertEqual(len(path), 7)
 
 
 if __name__ == '__main__':
